@@ -64,12 +64,12 @@ func TestSplitter(t *testing.T) {
 }
 
 func TestHandleError(t *testing.T) {
-	oldLogFn := logFn
+	oldLogPn := logPn
 	defer func() {
-		logFn = oldLogFn
+		logPn = oldLogPn
 	}()
 	called := false
-	logFn = func(v ...interface{}) {
+	logPn = func(v ...interface{}) {
 		called = true
 	}
 	err := errors.New("testError")

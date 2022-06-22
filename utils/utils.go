@@ -12,12 +12,13 @@ import (
 	"strings"
 )
 
-var logFn = log.Panic
+//unit test시에도 내용을 변경하여 정상운용 가능하도록 설정
+var logPn = log.Panic
 
 //HandleError error 변수를 받아 nil이 아닐경우 log.Panic(err)을 발생시킨다.
 func HandleError(err error) {
 	if err != nil {
-		logFn(err)
+		logPn(err)
 	}
 }
 

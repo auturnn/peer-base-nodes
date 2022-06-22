@@ -1,26 +1,16 @@
 package main
 
 import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/auturnn/peer-base-nodes/p2p"
-	"github.com/gorilla/mux"
+	"github.com/auturnn/peer-base-nodes/blockchain"
+	"github.com/auturnn/peer-base-nodes/db"
+	"github.com/auturnn/peer-base-nodes/rest"
 )
 
-const port = ":8333"
-
-type addPeerPayload struct {
-	Address string `json:"address"`
-	Port    string `json:"port"`
-}
+const port int = 8080
 
 func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/peers", func(rw http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(rw).Encode(p2p.AllPeers(&p2p.Peers))
-	}).Methods("GET")
-
-	r.HandleFunc("/ws", p2p.Upgrade).Methods("GET")
-	http.ListenAndServe(port, r)
+	defer db.Close()
+	db.InitDB(port)
+	blockchain.Mempool()
+	rest.Start(port)
 }

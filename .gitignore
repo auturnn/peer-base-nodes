@@ -1,0 +1,5 @@
+./explorer
+./log
+cover.out
+*.wallet
+*.db
