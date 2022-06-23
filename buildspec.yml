@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.16
+  build:
+    commands:
+      - echo Building the Go code...
+      - cd $CODEBUILD_SRC_DIR
+      - go build
+artifacts:
+  files:
+    - appspec.yml
+    - peer-base-nodes
+    - scripts/**
+  discard-paths: yes
+
+cache:
+  paths:
+    - "/root/.gradle/caches/**/*"
