@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
 	"github.com/auturnn/peer-base-nodes/utils"
-	"github.com/auturnn/peer-base-nodes/wallet"
 )
 
 type MessageKind int
@@ -72,10 +70,14 @@ func handlerMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
 		fmt.Printf("Received the newest block from %s\n", p.key)
+
 		var payload blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 
-		if payload.Height >= blockchain.BlockChain().Height {
+		b, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
+		utils.HandleError(err)
+
+		if payload.Height >= b.Height {
 			fmt.Printf("Requesting all blocks from %s\n", p.key)
 			requestAllBlocks(p)
 		} else {
@@ -101,12 +103,5 @@ func handlerMsg(m *Message, p *peer) {
 		var payload *blockchain.Tx
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
-
-	case MessageNewPeerNotify:
-		var payload string
-		utils.HandleError(json.Unmarshal(m.Payload, &payload))
-		parts := strings.Split(payload, ":")
-		wAddr := wallet.WalletLayer{}.GetAddress()[:5]
-		AddPeer(parts[0], parts[1], parts[2], wAddr, false)
 	}
 }

@@ -156,11 +156,20 @@ func Start(cPort int) {
 	router.HandleFunc("/wallet", myWallet).Methods("GET")
 	router.HandleFunc("/ws", p2p.Upgrade).Methods("GET")
 	router.HandleFunc("/peers", getPeers).Methods("GET")
-
+	router.HandleFunc("/health-check", func(rw http.ResponseWriter, r *http.Request) {
+		//전 기능 검사후에 healthCheck ok를 true로 바꿀수있도록 개선희망!
+		healthCheck := struct {
+			Status bool   `json:"status"`
+			Msg    string `json:"msg"`
+		}{Status: true, Msg: ""}
+		json.NewEncoder(rw).Encode(healthCheck)
+		rw.WriteHeader(200)
+	}).Methods("GET")
 	port = fmt.Sprintf(":%d", cPort)
 	log.Printf("Listening http://localhost%s\n", port)
-	cors := handlers.CORS()(router)
 
+	cors := handlers.CORS()(router)
 	recovery := handlers.RecoveryHandler()(cors)
+
 	log.Fatal(http.ListenAndServe(port, recovery))
 }

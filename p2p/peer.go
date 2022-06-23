@@ -17,12 +17,13 @@ var Peers peers = peers{
 }
 
 type peer struct {
-	key   string
-	addr  string
-	port  string
-	wAddr string
-	conn  *websocket.Conn
-	inbox chan []byte
+	key    string
+	addr   string
+	port   string
+	wddr   string
+	server bool
+	conn   *websocket.Conn
+	inbox  chan []byte
 }
 
 func AllPeers(p *peers) []string {
@@ -68,15 +69,14 @@ func (p *peer) write() {
 	}
 }
 
-func initPeer(conn *websocket.Conn, addr, port, wAddr string) *peer {
+func initPeer(conn *websocket.Conn, addr, port, peerWallet string) *peer {
 	Peers.m.Lock()
 	defer Peers.m.Unlock()
-	key := fmt.Sprintf("%s:%s:%s", addr, port, wAddr)
+	key := fmt.Sprintf("%s:%s:%s", addr, port, peerWallet)
 	p := &peer{
 		addr:  addr,
 		port:  port,
 		key:   key,
-		wAddr: wAddr,
 		conn:  conn,
 		inbox: make(chan []byte),
 	}

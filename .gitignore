@@ -1,5 +1,6 @@
 ./explorer
 ./log
 cover.out
+*.log
 *.wallet
 *.db
