@@ -78,8 +78,11 @@ func handlerMsg(m *Message, p *peer) {
 		utils.HandleError(err)
 
 		if payload.Height >= b.Height {
-			fmt.Printf("Requesting all blocks from %s\n", p.key)
-			requestAllBlocks(p)
+			//NewestHash, PrevHash가 같다면 전송을 하지 않는다.
+			if payload.Hash != b.Hash || payload.PrevHash != b.PrevHash{
+				fmt.Printf("Requesting all blocks from %s\n", p.key)
+				requestAllBlocks(p)
+			}
 		} else {
 			sendNewestBlock(p)
 		}
