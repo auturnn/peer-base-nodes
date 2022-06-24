@@ -37,17 +37,15 @@ func loggerMiddleware(next http.Handler) http.Handler {
 	return handlers.LoggingHandler(f, next)
 }
 
-
-
 func loggingFileOpen(fileName string) *os.File {
 	logPath := "./log"
-	if _, err := os.Stat(logPath); err != nil{
-		if err := os.Mkdir(logPath, 755); err !=nil{
+	if _, err := os.Stat(logPath); err != nil {
+		if err := os.Mkdir(logPath, 0755); err != nil {
 			utils.HandleError(errors.New("failed logging path create"))
 		}
 	}
-	
-	f, err := os.OpenFile(fmt.Sprintf("%s/%s.log", logPath ,fileName), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0655)
+
+	f, err := os.OpenFile(fmt.Sprintf("%s/%s.log", logPath, fileName), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0655)
 	utils.HandleError(err)
 
 	return f

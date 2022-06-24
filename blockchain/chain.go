@@ -137,7 +137,9 @@ func BlockChain() *blockchain {
 	once.Do(func() {
 		bc = &blockchain{Height: 0}
 		checkpoint := dbStorage.LoadChain()
-		if checkpoint != nil {
+		if checkpoint == nil {
+			bc.AddBlock()
+		} else {
 			bc.restore(checkpoint)
 		}
 	})

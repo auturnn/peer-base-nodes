@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/auturnn/peer-base-nodes/utils"
@@ -28,7 +29,7 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return newPeerPort != "" && ip != ""
 	}
-	fmt.Printf("%s:%s:%s wants an upgrade\n", ip, newPeerPort, newPeerWddr)
+	log.Printf("%s:%s:%s wants an upgrade\n", ip, newPeerPort, newPeerWddr)
 
 	conn, err := upgrader.Upgrade(rw, r, nil)
 	utils.HandleError(err)

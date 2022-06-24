@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
@@ -69,18 +68,17 @@ func notifyNewPeer(addr string, p *peer) {
 func handlerMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
-		fmt.Printf("Received the newest block from %s\n", p.key)
+		log.Printf("Received the newest block from %s\n", p.key)
 
 		var payload blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 
-		b, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
+		block, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 		utils.HandleError(err)
 
-		if payload.Height >= b.Height {
-			//NewestHash, PrevHash가 같다면 전송을 하지 않는다.
-			if payload.Hash != b.Hash || payload.PrevHash != b.PrevHash{
-				fmt.Printf("Requesting all blocks from %s\n", p.key)
+		if payload.Height >= block.Height {
+			if payload.Hash != block.Hash {
+				log.Printf("Requesting all blocks from %s\n", p.key)
 				requestAllBlocks(p)
 			}
 		} else {
@@ -88,21 +86,23 @@ func handlerMsg(m *Message, p *peer) {
 		}
 
 	case MessageAllBlocksrequest:
-		fmt.Printf("%s wants all the blocks.\n", p.key)
+		log.Printf("%s wants all the blocks.\n", p.key)
 		sendAllBlocks(p)
 
 	case MessageAllBlocksResponse:
-		fmt.Printf("Received all the blocks from %s\n", p.key)
+		log.Printf("Received all the blocks from %s\n", p.key)
 		var payload []*blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.BlockChain().Replace(payload)
 
 	case MessageNewBlockNotify:
+		log.Printf("NewBlockNotify!")
 		var payload *blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.BlockChain().AddPeerBlock(payload)
 
 	case MessageNewTxNotify:
+		log.Printf("NewTxNotify!")
 		var payload *blockchain.Tx
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
