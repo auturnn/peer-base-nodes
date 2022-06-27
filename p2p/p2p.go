@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -39,6 +40,14 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	broadcastNewPeer(p)
 }
 
+func AddPeer(newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr string, server bool) {
+	log.Printf("%s:%s:%s wants to connect to port %s:%s\n", newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr)
+	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?nwddr=%s&port=%s&wddr=%s&server=%t", newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr, server), nil)
+	utils.HandleError(err)
+	p := initPeer(conn, newPeerAddr, newPeerPort, newPeerWAddr, server)
+	sendNewestBlock(p)
+}
+
 func broadcastNewPeer(newPeer *peer) {
 	for key, p := range Peers.v {
 		if key != newPeer.key {
@@ -47,4 +56,14 @@ func broadcastNewPeer(newPeer *peer) {
 			notifyNewPeer(payload, p)
 		}
 	}
+}
+
+func GetServerList(rw http.ResponseWriter, r *http.Request) {
+	serverList := []string{}
+	for key, p := range Peers.v {
+		if p.server {
+			serverList = append(serverList, key)
+		}
+	}
+	json.NewEncoder(rw).Encode(serverList)
 }

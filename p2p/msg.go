@@ -3,6 +3,8 @@ package p2p
 import (
 	"encoding/json"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
 	"github.com/auturnn/peer-base-nodes/utils"
@@ -76,11 +78,13 @@ func handlerMsg(m *Message, p *peer) {
 		block, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 		utils.HandleError(err)
 
+		if payload.Hash == block.Hash && payload.Height == block.Height {
+			return
+		}
+
 		if payload.Height >= block.Height {
-			if payload.Hash != block.Hash {
-				log.Printf("Requesting all blocks from %s\n", p.key)
-				requestAllBlocks(p)
-			}
+			log.Printf("Requesting all blocks from %s\n", p.key)
+			requestAllBlocks(p)
 		} else {
 			sendNewestBlock(p)
 		}
@@ -106,5 +110,15 @@ func handlerMsg(m *Message, p *peer) {
 		var payload *blockchain.Tx
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
+
+	case MessageNewPeerNotify:
+		var payload string
+		// {연결해오는peerAddr : 연결해오는peerPort : 연결해오는peerWallet}
+		// :{연결되있는peerAddr: 연결되있는peerPort : 연결되있는peerWallet}
+		utils.HandleError(json.Unmarshal(m.Payload, &payload))
+		parts := strings.Split(payload, ":")
+		server, _ := strconv.ParseBool(parts[5])
+		AddPeer(parts[0], parts[1], parts[2], parts[3], parts[4], server)
 	}
+
 }

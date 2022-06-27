@@ -53,7 +53,8 @@ type myWalletResponse struct {
 }
 
 type addPeerPayload struct {
-	Address, Port string
+	Address, Port, Wallet string
+	Server                bool
 }
 
 func documentation(rw http.ResponseWriter, r *http.Request) {
@@ -142,18 +143,27 @@ func getPeers(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(p2p.AllPeers(&p2p.Peers))
 }
 
+func postPeer(rw http.ResponseWriter, r *http.Request) {
+	var payload addPeerPayload
+	json.NewDecoder(r.Body).Decode(&payload)
+
+	p2p.AddPeer(payload.Address, payload.Port, payload.Wallet, port[1:], wallet.WalletLayer{}.GetAddress()[:5], payload.Server)
+}
+
 //wallet파일만있으면 자신이 해당 파일을 가지고 그사람인척도 가능.
 //그렇기때문에 로그인기능같은 본인인증이 필요함
 func Start(cPort int) {
 	router := mux.NewRouter()
 	router.Use(jsonContentTypeMiddleware, loggerMiddleware)
 	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/server", p2p.GetServerList).Methods("GET")
 	router.HandleFunc("/status", getStatus).Methods("GET")
 	router.HandleFunc("/blocks", getBlocks).Methods("GET")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", getBlock).Methods("GET")
 	router.HandleFunc("/balance/{address}", getBalance).Methods("GET")
 	router.HandleFunc("/mempool", getMempool).Methods("GET")
 	router.HandleFunc("/wallet", myWallet).Methods("GET")
+	router.HandleFunc("/peers", postPeer).Methods("POST")
 	router.HandleFunc("/ws", p2p.Upgrade).Methods("GET")
 	router.HandleFunc("/peers", getPeers).Methods("GET")
 	router.HandleFunc("/health-check", func(rw http.ResponseWriter, r *http.Request) {
