@@ -69,16 +69,17 @@ func (p *peer) write() {
 	}
 }
 
-func initPeer(conn *websocket.Conn, addr, port, peerWallet string) *peer {
+func initPeer(conn *websocket.Conn, addr, port, peerWallet string, server bool) *peer {
 	Peers.m.Lock()
 	defer Peers.m.Unlock()
 	key := fmt.Sprintf("%s:%s:%s", addr, port, peerWallet)
 	p := &peer{
-		addr:  addr,
-		port:  port,
-		key:   key,
-		conn:  conn,
-		inbox: make(chan []byte),
+		addr:   addr,
+		port:   port,
+		key:    key,
+		server: server,
+		conn:   conn,
+		inbox:  make(chan []byte),
 	}
 
 	go p.read()

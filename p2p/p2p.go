@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/auturnn/peer-base-nodes/utils"
 	"github.com/auturnn/peer-base-nodes/wallet"
@@ -23,7 +24,7 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 
 	newPeerPort := r.URL.Query().Get("port")
 	newPeerWddr := r.URL.Query().Get("wddr")
-
+	newPeerServerTF := r.URL.Query().Get("server")
 	ip := utils.Splitter(r.RemoteAddr, ":", 0)
 
 	upgrader.CheckOrigin = func(r *http.Request) bool {
@@ -33,8 +34,8 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(rw, r, nil)
 	utils.HandleError(err)
-
-	p := initPeer(conn, ip, newPeerPort, newPeerWddr)
+	server, _ := strconv.ParseBool(newPeerServerTF)
+	p := initPeer(conn, ip, newPeerPort, newPeerWddr, server)
 	broadcastNewPeer(p)
 }
 
