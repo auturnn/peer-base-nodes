@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	walletName       string = "kickshaw"
-	walletExtentsion string = ".wallet"
+	walletName string = "kickshaw.wallet"
 )
 
 type WalletLayer struct{}
@@ -104,7 +103,7 @@ func createPrivKey() *ecdsa.PrivateKey {
 }
 
 func getWalletPath() string {
-	return fmt.Sprintf("./%s_%d%s", walletName, 8080, walletExtentsion)
+	return fmt.Sprintf("./%s", walletName)
 }
 
 func restoreKey() *ecdsa.PrivateKey {

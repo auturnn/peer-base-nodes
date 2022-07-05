@@ -10,7 +10,7 @@ const port int = 8080
 
 func main() {
 	defer db.Close()
-	db.InitDB(port)
+	db.InitDB()
 	blockchain.Mempool()
 	rest.Start(port)
 }

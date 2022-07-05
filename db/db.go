@@ -84,17 +84,17 @@ func emptyBlocks() {
 	})
 }
 
-func getDBName(port int) string {
-	return fmt.Sprintf("./%s_%d.db", dbName, port)
+func getDBName() string {
+	return fmt.Sprintf("./%s.db", dbName)
 }
 
 func Close() {
 	db.Close()
 }
 
-func InitDB(port int) {
+func InitDB() {
 	if db == nil {
-		dbPointer, err := bolt.Open(getDBName(port), 0600, nil)
+		dbPointer, err := bolt.Open(getDBName(), 0600, nil)
 		db = dbPointer
 		utils.HandleError(err)
 

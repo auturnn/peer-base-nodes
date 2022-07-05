@@ -3,7 +3,6 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
@@ -12,6 +11,7 @@ import (
 	"github.com/auturnn/peer-base-nodes/wallet"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	log "github.com/kataras/golog"
 )
 
 var port string
@@ -83,6 +83,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			URL:         url("/balance/{address}"),
 			Method:      "GET",
 			Description: "Get TxOuts for an Address",
+		},
+		{
+			URL:         url("/mempool"),
+			Method:      "GET",
+			Description: "Get Transaction in mempool",
 		},
 		{
 			URL:         url("/ws"),
@@ -175,11 +180,11 @@ func Start(cPort int) {
 		json.NewEncoder(rw).Encode(healthCheck)
 		rw.WriteHeader(200)
 	}).Methods("GET")
+
 	port = fmt.Sprintf(":%d", cPort)
-	log.Printf("Listening http://localhost%s\n", port)
+	log.Logf(log.InfoLevel, "Listening http://localhost%s", port)
 
 	cors := handlers.CORS()(router)
 	recovery := handlers.RecoveryHandler()(cors)
-
 	log.Fatal(http.ListenAndServe(port, recovery))
 }

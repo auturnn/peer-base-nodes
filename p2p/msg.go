@@ -2,12 +2,12 @@ package p2p
 
 import (
 	"encoding/json"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
 	"github.com/auturnn/peer-base-nodes/utils"
+	log "github.com/kataras/golog"
 )
 
 type MessageKind int
@@ -35,7 +35,7 @@ func makeMessage(kind MessageKind, payload interface{}) []byte {
 }
 
 func sendNewestBlock(p *peer) {
-	log.Printf("Sending newest block to %s\n", p.key)
+	logf(log.InfoLevel, "Sending newest block to %s", p.key)
 	b, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 	utils.HandleError(err)
 	m := makeMessage(MessageNewestBlock, b)
@@ -70,7 +70,7 @@ func notifyNewPeer(addr string, p *peer) {
 func handlerMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
-		log.Printf("Received the newest block from %s\n", p.key)
+		logf(log.InfoLevel, "Peer %s - Received the newest block", p.key)
 
 		var payload blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
@@ -83,38 +83,38 @@ func handlerMsg(m *Message, p *peer) {
 		}
 
 		if payload.Height >= block.Height {
-			log.Printf("Requesting all blocks from %s\n", p.key)
+			logf(log.InfoLevel, "Peer %s - Requesting all blocks", p.key)
 			requestAllBlocks(p)
 		} else {
 			sendNewestBlock(p)
 		}
 
 	case MessageAllBlocksrequest:
-		log.Printf("%s wants all the blocks.\n", p.key)
+		logf(log.InfoLevel, "Peer %s - Wants all the blocks", p.key)
 		sendAllBlocks(p)
 
 	case MessageAllBlocksResponse:
-		log.Printf("Received all the blocks from %s\n", p.key)
+		logf(log.InfoLevel, "Peer %s - Received all the blocks", p.key)
 		var payload []*blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.BlockChain().Replace(payload)
 
 	case MessageNewBlockNotify:
-		log.Printf("NewBlockNotify!")
+		logf(log.InfoLevel, "Peer %s - NewBlockNotify!", p.key)
 		var payload *blockchain.Block
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.BlockChain().AddPeerBlock(payload)
 
 	case MessageNewTxNotify:
-		log.Printf("NewTxNotify!")
+		logf(log.InfoLevel, "Peer %s - NewTxNotify!", p.key)
 		var payload *blockchain.Tx
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
 
 	case MessageNewPeerNotify:
-		var payload string
 		// {연결해오는peerAddr : 연결해오는peerPort : 연결해오는peerWallet}
 		// :{연결되있는peerAddr: 연결되있는peerPort : 연결되있는peerWallet}
+		var payload string
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		parts := strings.Split(payload, ":")
 		server, _ := strconv.ParseBool(parts[5])

@@ -76,6 +76,7 @@ func initPeer(conn *websocket.Conn, addr, port, peerWallet string, server bool) 
 	p := &peer{
 		addr:   addr,
 		port:   port,
+		wddr:   peerWallet,
 		key:    key,
 		server: server,
 		conn:   conn,

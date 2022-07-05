@@ -3,15 +3,16 @@ package p2p
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/auturnn/peer-base-nodes/utils"
 	"github.com/auturnn/peer-base-nodes/wallet"
 	"github.com/gorilla/websocket"
+	log "github.com/kataras/golog"
 )
 
+var logf = log.Logf
 var upgrader = websocket.Upgrader{}
 var myWalletAddr = wallet.WalletLayer{}.GetAddress()[:5]
 
@@ -31,7 +32,7 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return newPeerPort != "" && ip != ""
 	}
-	log.Printf("%s:%s:%s wants an upgrade\n", ip, newPeerPort, newPeerWddr)
+	logf(log.InfoLevel, "%s:%s:%s wants an upgrade", ip, newPeerPort, newPeerWddr)
 
 	conn, err := upgrader.Upgrade(rw, r, nil)
 	utils.HandleError(err)
@@ -41,7 +42,7 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 }
 
 func AddPeer(newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr string, server bool) {
-	log.Printf("%s:%s:%s wants to connect to port %s:%s\n", newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr)
+	logf(log.InfoLevel, "%s:%s:%s wants to connect to port %s:%s", newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr)
 	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?nwddr=%s&port=%s&wddr=%s&server=%t", newPeerAddr, newPeerPort, newPeerWAddr, existPeerPort, existPeerWAddr, server), nil)
 	utils.HandleError(err)
 	p := initPeer(conn, newPeerAddr, newPeerPort, newPeerWAddr, server)
