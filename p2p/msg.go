@@ -2,8 +2,6 @@ package p2p
 
 import (
 	"encoding/json"
-	"strconv"
-	"strings"
 
 	"github.com/auturnn/peer-base-nodes/blockchain"
 	"github.com/auturnn/peer-base-nodes/utils"
@@ -111,14 +109,5 @@ func handlerMsg(m *Message, p *peer) {
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
 
-	case MessageNewPeerNotify:
-		// {연결해오는peerAddr : 연결해오는peerPort : 연결해오는peerWallet}
-		// :{연결되있는peerAddr: 연결되있는peerPort : 연결되있는peerWallet}
-		var payload string
-		utils.HandleError(json.Unmarshal(m.Payload, &payload))
-		parts := strings.Split(payload, ":")
-		server, _ := strconv.ParseBool(parts[5])
-		AddPeer(parts[0], parts[1], parts[2], parts[3], parts[4], server)
 	}
-
 }
