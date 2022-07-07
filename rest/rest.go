@@ -151,8 +151,9 @@ func getPeers(rw http.ResponseWriter, r *http.Request) {
 func postPeer(rw http.ResponseWriter, r *http.Request) {
 	var payload addPeerPayload
 	json.NewDecoder(r.Body).Decode(&payload)
-
-	p2p.AddPeer(payload.Address, payload.Port, payload.Wallet, port[1:], wallet.WalletLayer{}.GetAddress()[:5], payload.Server)
+	newPeer := []string{payload.Address, payload.Port, payload.Wallet}
+	myInfo := []string{port[1:], wallet.WalletLayer{}.GetAddress()[:5]}
+	p2p.AddPeer(newPeer, myInfo, payload.Server)
 }
 
 //wallet파일만있으면 자신이 해당 파일을 가지고 그사람인척도 가능.
