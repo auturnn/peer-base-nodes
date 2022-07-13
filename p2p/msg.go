@@ -76,10 +76,6 @@ func handlerMsg(m *Message, p *peer) {
 		block, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 		utils.HandleError(err)
 
-		if payload.Hash == block.Hash && payload.Height == block.Height {
-			return
-		}
-
 		if payload.Height >= block.Height {
 			logf(log.InfoLevel, "Peer %s - Requesting all blocks", p.key)
 			requestAllBlocks(p)
@@ -108,6 +104,5 @@ func handlerMsg(m *Message, p *peer) {
 		var payload *blockchain.Tx
 		utils.HandleError(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
-
 	}
 }
